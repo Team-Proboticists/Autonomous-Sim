@@ -38,6 +38,37 @@ def generate_launch_description():
             'config',
             'nav2_config.yaml'
     )
+
+    octomap_node = Node(
+            package='octomap_server',
+            executable='octomap_server_node',
+            name = "octomap_node",
+            parameters=[{
+                'frame_id': 'camera_init',
+                'resolution': 0.05,
+                'min_z': -10.0,
+                'max_z': 10.0,
+                'publish_2d_map': True,
+                'publish_full_map': False,
+                'filter_speckles': False,
+                'compress_map': False,
+                'use_sim_time': True
+            }],
+            remappings=[
+                ('cloud_in', '/cloud_registered')
+            ]
+        )
+    
+    map_node = Node(
+            package='tf2_ros',
+            executable='static_transform_publisher',
+            name='map_to_camera_init',
+            arguments=[
+                '--x', '0', '--y', '0', '--z', '0',
+                '--yaw', '0', '--pitch', '0', '--roll',
+                '0', '--frame-id', 'map', '--child-frame-id', 'camera_init'
+            ],
+        )
     
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
     x_pose = LaunchConfiguration('x_pose', default='-2.0')
@@ -113,9 +144,11 @@ def generate_launch_description():
     ld.add_action(spawn_turtlebot_cmd)
     ld.add_action(fast_lio_launch)
     ld.add_action(static_tf_cmd)
+    ld.add_action(octomap_node)
+    ld.add_action(map_node)
     ld.add_action(
 				TimerAction(
-				    period=20.0,  # seconds
+				    period=15.0,  # seconds
 				    actions=[nav2_launch]
 				)
     )
