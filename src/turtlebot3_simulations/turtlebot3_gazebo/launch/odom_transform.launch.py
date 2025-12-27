@@ -6,11 +6,11 @@ def generate_launch_description():
         Node(
             package='tf2_ros',
             executable='static_transform_publisher',
-            name='camera_init_to_base_link',
+            name='body_to_base_footprint',
             arguments=[
                 '--x', '0', '--y', '0', '--z', '0',
                 '--yaw', '0', '--pitch', '0', '--roll',
-                '0', '--frame-id', 'camera_init', '--child-frame-id', 'base_footprint'
+                '0', '--frame-id', 'body', '--child-frame-id', 'base_link'
             ],
         )
     ])

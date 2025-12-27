@@ -21,10 +21,10 @@ import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription
-from launch_ros.actions import Node
+from launch_ros.actions import Node, SetParameter
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
-from launch.actions import TimerAction
+from launch.actions import TimerAction, DeclareLaunchArgument
 
 
 def generate_launch_description():
@@ -32,47 +32,20 @@ def generate_launch_description():
     pkg_gazebo_ros = get_package_share_directory('gazebo_ros')
     pkg_lio_sam = get_package_share_directory('fast_lio')
     nav2_config=get_package_share_directory('nav2_bringup')
+    rtabmap_pkg = get_package_share_directory('rtabmap_livox')
     
+    rtabmap_launch_file = os.path.join(rtabmap_pkg, 'launch', 'rtabmap_turtlesim.launch.py')
+
     params_file=os.path.join(
             get_package_share_directory('turtlebot3_gazebo'),
             'config',
             'nav2_config.yaml'
     )
 
-    octomap_node = Node(
-            package='octomap_server',
-            executable='octomap_server_node',
-            name = "octomap_node",
-            parameters=[{
-                'frame_id': 'camera_init',
-                'resolution': 0.05,
-                'min_z': -10.0,
-                'max_z': 10.0,
-                'publish_2d_map': True,
-                'publish_full_map': False,
-                'filter_speckles': False,
-                'compress_map': False,
-                'use_sim_time': True
-            }],
-            remappings=[
-                ('cloud_in', '/cloud_registered')
-            ]
-        )
-    
-    map_node = Node(
-            package='tf2_ros',
-            executable='static_transform_publisher',
-            name='map_to_camera_init',
-            arguments=[
-                '--x', '0', '--y', '0', '--z', '0',
-                '--yaw', '0', '--pitch', '0', '--roll',
-                '0', '--frame-id', 'map', '--child-frame-id', 'camera_init'
-            ],
-        )
-    
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
     x_pose = LaunchConfiguration('x_pose', default='-2.0')
     y_pose = LaunchConfiguration('y_pose', default='-0.5')
+
     nav2_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(nav2_config, 'launch', 'navigation_launch.py')
@@ -86,7 +59,7 @@ def generate_launch_description():
     world = os.path.join(
         get_package_share_directory('turtlebot3_gazebo'),
         'worlds',
-        'turtlebot3_world.world'
+        'turtlebot3_world.world',
     )
 
     gzserver_cmd = IncludeLaunchDescription(
@@ -123,6 +96,7 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(
             os.path.join(launch_file_dir, 'odom_transform.launch.py')
         ),
+        launch_arguments={'use_sim_time': use_sim_time}.items()
     )
 
     fast_lio_launch = IncludeLaunchDescription(
@@ -130,10 +104,15 @@ def generate_launch_description():
             os.path.join(pkg_lio_sam, 'launch', 'mapping.launch.py')
         ),
         launch_arguments={
+            'use_sim_time': use_sim_time,
             'config_file': 'mid360.yaml'
         }.items()
     )
-
+    
+    rtabmap_launch = IncludeLaunchDescription(
+        rtabmap_launch_file,
+        launch_arguments={'use_sim_time': use_sim_time}.items()
+    )
     ld = LaunchDescription()
 
     # Add the commands to the launch description
@@ -144,14 +123,12 @@ def generate_launch_description():
     ld.add_action(spawn_turtlebot_cmd)
     ld.add_action(fast_lio_launch)
     ld.add_action(static_tf_cmd)
-    ld.add_action(octomap_node)
-    ld.add_action(map_node)
+    ld.add_action(rtabmap_launch)
     ld.add_action(
 				TimerAction(
 				    period=15.0,  # seconds
 				    actions=[nav2_launch]
 				)
     )
-
 
     return ld

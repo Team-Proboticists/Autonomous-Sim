@@ -3,8 +3,6 @@
   <model name="turtlebot3_waffle">  
   <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
 
-    <link name="base_footprint"/>
-
     <link name="base_link">
 
       <inertial>
@@ -502,12 +500,6 @@
       </sensor>
     </link>    
 
-    <joint name="base_joint" type="fixed">
-      <parent>base_footprint</parent>
-      <child>base_link</child>
-      <pose>0.0 0.0 0.010 0 0 0</pose>
-    </joint>
-
     <joint name="wheel_left_joint" type="revolute">
       <parent>base_link</parent>
       <child>wheel_left_link</child>
@@ -595,13 +587,13 @@
       <command_topic>cmd_vel</command_topic>
 
       <!-- output -->
-      <publish_odom>true</publish_odom>
+      <publish_odom>false</publish_odom>
       <publish_odom_tf>false</publish_odom_tf>
       <publish_wheel_tf>false</publish_wheel_tf>
 
       <odometry_topic>odom</odometry_topic>
       <odometry_frame>odom</odometry_frame>
-      <robot_base_frame>base_footprint</robot_base_frame>
+      <robot_base_frame>base_link</robot_base_frame>
 
     </plugin>
 
