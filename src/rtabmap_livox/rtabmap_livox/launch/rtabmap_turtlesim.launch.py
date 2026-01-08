@@ -14,7 +14,7 @@ def generate_launch_description():
             parameters=[{
                 # Frames
                 'frame_id': 'base_link',
-                'odom_frame_id': 'camera_init',   # FAST-LIO odom
+                'odom_frame_id': 'camera_init',
                 'map_frame_id': 'map',
 
                 # Inputs
@@ -36,7 +36,7 @@ def generate_launch_description():
                 'RGBD/AngularUpdate': '0.05',
                 'RGBD/LinearUpdate': '0.05',
 
-                # ICP (use FAST-LIO-quality cloud)
+                # ICP
                 'Reg/Strategy': '1',
                 'Icp/PointToPlane': 'true',
                 'Icp/VoxelSize': '0.1',
@@ -45,15 +45,18 @@ def generate_launch_description():
                 'Icp/Epsilon': '0.001',
                 'Icp/OutlierRatio': '0.7',
 
-                # Occupancy grid (OPTIONAL but useful for Nav2)
+                # Occupancy grid
                 'RGBD/CreateOccupancyGrid': 'true',
                 'Grid/FromDepth': 'false',
-                'Grid/3D': 'true',
-                'Grid/RangeMax': '10.0',
+                'Grid/3D': 'false',  # Changed to true
+                'Grid/Sensor': '0',  # Added - use laser scan mode
+                'Grid/RangeMax': '20.0',  # Increased range
                 'Grid/CellSize': '0.05',
-                'Grid/MinGroundHeight': '0.00',
-                'Grid/MaxGroundHeight': '0.02',
+                'Grid/MinGroundHeight': '-1.0',  # More permissive
+                'Grid/MaxGroundHeight': '0.5',   # Adjusted
+                'Grid/MaxObstacleHeight': '2.0',  # Added
                 'Grid/RayTracing': 'true',
+                'Grid/NormalsSegmentation': 'false',  # Added
 
                 'use_sim_time': True,
             }],

@@ -34,7 +34,7 @@ def generate_launch_description():
     nav2_config=get_package_share_directory('nav2_bringup')
     rtabmap_pkg = get_package_share_directory('rtabmap_livox')
     
-    rtabmap_launch_file = os.path.join(rtabmap_pkg, 'launch', 'rtabmap_turtlesim.launch.py')
+    rtabmap_launch_file = os.path.join(rtabmap_pkg, 'launch', 'rtab_map_bringup.launch.py')
 
     params_file=os.path.join(
             get_package_share_directory('turtlebot3_gazebo'),

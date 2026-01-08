@@ -6,7 +6,7 @@ global_costmap:
       publish_frequency: 1.0
 
       global_frame: map
-      robot_base_frame: base_link
+      robot_base_frame: body
 
       robot_radius: 0.22
       resolution: 0.05
@@ -24,7 +24,7 @@ global_costmap:
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         enabled: true
-        inflation_radius: 0.1
+        inflation_radius: 0.2
         cost_scaling_factor: 1.0
 
       always_send_full_costmap: true
@@ -36,7 +36,7 @@ local_costmap:
       publish_frequency: 2.0
 
       global_frame: camera_init
-      robot_base_frame: body
+      robot_base_frame: base_link
 
       rolling_window: true
       width: 5
@@ -58,7 +58,7 @@ local_costmap:
 
         observation_sources: pointcloud
         pointcloud:
-          topic: /cloud_registered_body
+          topic: /mid360_PointCloud2
           data_type: "PointCloud2"
           marking: true
           clearing: true
