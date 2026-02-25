@@ -24,6 +24,7 @@ from launch.actions import IncludeLaunchDescription
 from launch_ros.actions import Node, SetParameter
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
+from launch.conditions import IfCondition
 from launch.actions import TimerAction, DeclareLaunchArgument
 
 
@@ -33,6 +34,9 @@ def generate_launch_description():
     pkg_lio_sam = get_package_share_directory('fast_lio')
     nav2_config=get_package_share_directory('nav2_bringup')
     rtabmap_pkg = get_package_share_directory('rtabmap_livox')
+    package_path = get_package_share_directory('fast_lio')
+    default_rviz_config_path = os.path.join(
+        package_path, 'rviz', 'fastlio.rviz')
     
     rtabmap_launch_file = os.path.join(rtabmap_pkg, 'launch', 'rtab_map_bringup.launch.py')
 
@@ -42,6 +46,8 @@ def generate_launch_description():
             'nav2_config.yaml'
     )
 
+    rviz_use = LaunchConfiguration('rviz')
+    rviz_cfg = LaunchConfiguration('rviz_cfg')
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
     x_pose = LaunchConfiguration('x_pose', default='-2.0')
     y_pose = LaunchConfiguration('y_pose', default='-0.5')
@@ -113,17 +119,37 @@ def generate_launch_description():
         rtabmap_launch_file,
         launch_arguments={'use_sim_time': use_sim_time}.items()
     )
+
+    declare_rviz_cmd = DeclareLaunchArgument(
+        'rviz', default_value='true',
+        description='Use RViz to monitor results'
+    )
+    declare_rviz_config_path_cmd = DeclareLaunchArgument(
+        'rviz_cfg', default_value=default_rviz_config_path,
+        description='RViz config file path'
+    )
+
+    rviz_node = Node(
+        package='rviz2',
+        executable='rviz2',
+        arguments=['-d', rviz_cfg],
+        condition=IfCondition(rviz_use)
+    )
+
     ld = LaunchDescription()
 
     # Add the commands to the launch description
     
     ld.add_action(gzserver_cmd)
     ld.add_action(gzclient_cmd)
+    ld.add_action(declare_rviz_cmd)
+    ld.add_action(declare_rviz_config_path_cmd)
     ld.add_action(robot_state_publisher_cmd)
     ld.add_action(spawn_turtlebot_cmd)
     ld.add_action(fast_lio_launch)
     ld.add_action(static_tf_cmd)
     ld.add_action(rtabmap_launch)
+    ld.add_action(rviz_node)
     ld.add_action(
 				TimerAction(
 				    period=15.0,  # seconds
